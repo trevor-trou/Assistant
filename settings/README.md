@@ -1,0 +1,2 @@
+This directory should contain the following:
+1. "client_secret.json" - A credential file generated after registering the application with the Google Developers Console (NOT checked into source control). 
