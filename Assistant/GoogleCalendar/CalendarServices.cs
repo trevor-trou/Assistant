@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Configuration;
+using ClassLibrary;
 
 namespace GoogleCalendar
 {
@@ -83,7 +84,15 @@ namespace GoogleCalendar
         }
 
         // Report-specific methods
-        public Events GetUpcomingEventsAndTime()
+        /// <summary>
+        /// Get today's events
+        /// </summary>
+        /// <returns></returns>
+        public List<GeneralizedEvent> GetEvents()
+        {
+            return GetEvents(DateTime.Now, new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59));
+        }
+        public List<GeneralizedEvent> GetEvents(DateTime timeMin, DateTime timeMax)
         {
             // Define parameters of request.
             EventsResource.ListRequest request = service.Events.List("primary");
@@ -96,7 +105,15 @@ namespace GoogleCalendar
 
             // List events.bn 
             Events events = request.Execute();
-            return events;
+            return events.Items.Select(x => new GeneralizedEvent()
+            {
+                Name = x.Summary,
+                Description = x.Description,
+                Location = x.Location,
+                StartTime = x.Start.DateTime,
+                EndTime = x.End.DateTime,
+                Duration = (x.Start.DateTime.HasValue && x.End.DateTime.HasValue) ? x.Start.DateTime.Value - x.End.DateTime.Value : new TimeSpan()
+            }).ToList();
         }
     }
 }

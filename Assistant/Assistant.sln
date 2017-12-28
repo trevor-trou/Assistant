@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assistant", "Assistant\Assistant.csproj", "{A24272F8-6389-40FE-89C0-5DCE86E575E3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{75D6215C-6E73-4A22-B176-7810E0C3AED6} = {75D6215C-6E73-4A22-B176-7810E0C3AED6}
+		{7CF4A266-8D80-423F-8179-3B365EEAE2C1} = {7CF4A266-8D80-423F-8179-3B365EEAE2C1}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reporting", "Reporting\Reporting.csproj", "{7CF4A266-8D80-423F-8179-3B365EEAE2C1}"
 EndProject
@@ -11,7 +15,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleCalendar", "GoogleCal
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KanbanFlow", "KanbanFlow\KanbanFlow.csproj", "{75D6215C-6E73-4A22-B176-7810E0C3AED6}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ClassLibrary", "ClassLibrary\ClassLibrary.shproj", "{290B688E-CF15-4C12-970E-5D10EF0AA631}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		ClassLibrary\ClassLibrary.projitems*{290b688e-cf15-4c12-970e-5d10ef0aa631}*SharedItemsImports = 13
+		ClassLibrary\ClassLibrary.projitems*{75d6215c-6e73-4a22-b176-7810e0c3aed6}*SharedItemsImports = 4
+		ClassLibrary\ClassLibrary.projitems*{7cf4a266-8d80-423f-8179-3b365eeae2c1}*SharedItemsImports = 4
+		ClassLibrary\ClassLibrary.projitems*{a24272f8-6389-40fe-89c0-5dce86e575e3}*SharedItemsImports = 4
+		ClassLibrary\ClassLibrary.projitems*{b1a7aef7-9a10-482a-8f55-b818c643da9a}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
