@@ -9,7 +9,7 @@
     <Import_RootNamespace>ClassLibrary</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Event.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Task.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IEvent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ITask.cs" />
   </ItemGroup>
 </Project>

@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ClassLibrary
 {
-    public class GeneralizedTask
+    interface IEvent
     {
         string Name { get; set; }
         string Description { get; set; }
-        TimeSpan TimeEstimate { get; set; }
-        DateTime? DueDate { get; set; }
+        string Location { get; set; }
+        DateTime? StartTime { get; set; }
+        DateTime? EndTime { get; set; }
+        TimeSpan? Duration { get; set; }
     }
 }

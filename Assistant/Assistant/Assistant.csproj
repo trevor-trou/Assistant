@@ -71,7 +71,14 @@
       <Project>{b1a7aef7-9a10-482a-8f55-b818c643da9a}</Project>
       <Name>GoogleCalendar</Name>
     </ProjectReference>
+    <ProjectReference Include="..\KanbanFlow\KanbanFlow.csproj">
+      <Project>{75d6215c-6e73-4a22-b176-7810e0c3aed6}</Project>
+      <Name>KanbanFlow</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Reporting\Reporting.csproj">
+      <Project>{7cf4a266-8d80-423f-8179-3b365eeae2c1}</Project>
+      <Name>Reporting</Name>
+    </ProjectReference>
   </ItemGroup>
-  <Import Project="..\ClassLibrary\ClassLibrary.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

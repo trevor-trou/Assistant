@@ -60,7 +60,10 @@ namespace GoogleCalendar
                 Console.WriteLine("Credential file saved to: " + credPath);
             }
             if (startService())
+            {
+                signedIn = true;
                 return true;
+            }
             else
                 return false;
         }
@@ -88,16 +91,23 @@ namespace GoogleCalendar
         /// Get today's events
         /// </summary>
         /// <returns></returns>
-        public List<GeneralizedEvent> GetEvents()
+        public List<GeneralizedEvent> GetUpcomingEvents()
         {
             return GetEvents(DateTime.Now, new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59));
+        }
+
+        public List<GeneralizedEvent> GetTodaysEvents()
+        {
+            var todayLowerBound = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0);
+            var todayUpperBound = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59);
+            return GetEvents(todayLowerBound, todayUpperBound);
         }
         public List<GeneralizedEvent> GetEvents(DateTime timeMin, DateTime timeMax)
         {
             // Define parameters of request.
             EventsResource.ListRequest request = service.Events.List("primary");
-            request.TimeMin = DateTime.Now;
-            request.TimeMax = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59);
+            request.TimeMin = timeMin;
+            request.TimeMax = timeMax;
             request.ShowDeleted = false;
             request.SingleEvents = true;
             request.MaxResults = 10;
@@ -112,7 +122,7 @@ namespace GoogleCalendar
                 Location = x.Location,
                 StartTime = x.Start.DateTime,
                 EndTime = x.End.DateTime,
-                Duration = (x.Start.DateTime.HasValue && x.End.DateTime.HasValue) ? x.Start.DateTime.Value - x.End.DateTime.Value : new TimeSpan()
+                Duration = (x.Start.DateTime.HasValue && x.End.DateTime.HasValue) ? x.End.DateTime.Value - x.Start.DateTime.Value : new TimeSpan()
             }).ToList();
         }
     }
