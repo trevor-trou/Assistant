@@ -123,7 +123,7 @@ namespace GoogleCalendar
                 StartTime = x.Start.DateTime,
                 EndTime = x.End.DateTime,
                 Duration = (x.Start.DateTime.HasValue && x.End.DateTime.HasValue) ? x.End.DateTime.Value - x.Start.DateTime.Value : new TimeSpan()
-            }).ToList();
+            }).OrderBy(x => x.StartTime).ToList();
         }
     }
 }

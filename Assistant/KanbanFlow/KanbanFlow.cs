@@ -139,7 +139,7 @@ namespace KanbanFlowClient
         }
         private List<GeneralizedTask> GetTasksDue(DateTime lowerBound, DateTime upperBound, bool excludeDone = true)
         {
-            List<GeneralizedTask> dueToday = new List<GeneralizedTask>();
+            List<GeneralizedTask> due = new List<GeneralizedTask>();
 
             // Check if the board is populated and the dates are set
             if (!(populated && boardDatesSet))
@@ -159,7 +159,7 @@ namespace KanbanFlowClient
                         {
                             if (task.dueDate.HasValue && task.dueDate.Value >= lowerBound && task.dueDate.Value <= upperBound)
                             {
-                                dueToday.Add(new GeneralizedTask()
+                                due.Add(new GeneralizedTask()
                                 {
                                     Name = task.name,
                                     Description = task.description,
@@ -172,7 +172,7 @@ namespace KanbanFlowClient
                 }
             }
 
-            return dueToday;
+            return due.OrderBy(x => x.DueDate).ToList();
         }
         private bool testToken()
         {
