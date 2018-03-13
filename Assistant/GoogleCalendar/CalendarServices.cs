@@ -96,10 +96,10 @@ namespace GoogleCalendar
             return GetEvents(DateTime.Now, new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59));
         }
 
-        public List<GeneralizedEvent> GetTodaysEvents()
+        public List<GeneralizedEvent> GetTodaysEvents(int daysOffset = 0)
         {
-            var todayLowerBound = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0);
-            var todayUpperBound = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59);
+            var todayLowerBound = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(daysOffset).Day, 0, 0, 0);
+            var todayUpperBound = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(daysOffset).Day, 23, 59, 59);
             return GetEvents(todayLowerBound, todayUpperBound);
         }
         public List<GeneralizedEvent> GetEvents(DateTime timeMin, DateTime timeMax)

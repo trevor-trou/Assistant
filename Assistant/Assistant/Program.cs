@@ -24,7 +24,7 @@ namespace Assistant
             cs.SignIn();
 
             StandupReport report = new StandupReport(cs, kb);
-            report.GenerateReport();
+            report.GenerateReport(1);
         }
     }
 }

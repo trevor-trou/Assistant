@@ -31,7 +31,7 @@ namespace Reporting
             get { return exceptionString; }
         }
 
-        public bool GenerateReport(TimeSpan? workableHours = null, double targetProductivity = 0.75)
+        public bool GenerateReport(int daysOffset = 0, TimeSpan? workableHours = null, double targetProductivity = 0.75)
         {
             if (!workableHours.HasValue)
             {
@@ -43,10 +43,10 @@ namespace Reporting
                 exceptionString = "Missing authorization from either Google Client of Kanban Client";
                 return false;
             }
-            List<GeneralizedEvent> todaysEvents = GoogleClient.GetTodaysEvents();
-            List<GeneralizedTask> dueToday = KanbanClient.GetDueToday();
-            List<GeneralizedTask> dueTomorrow = KanbanClient.GetDueTomorrow();
-            List<GeneralizedTask> dueThisWeek = KanbanClient.GetDueLaterThisWeek();
+            List<GeneralizedEvent> todaysEvents = GoogleClient.GetTodaysEvents(daysOffset);
+            List<GeneralizedTask> dueToday = KanbanClient.GetDueToday(daysOffset);
+            List<GeneralizedTask> dueTomorrow = KanbanClient.GetDueTomorrow(daysOffset);
+            List<GeneralizedTask> dueThisWeek = KanbanClient.GetDueLaterThisWeek(daysOffset);
 
             TimeSpan obligatedTime = new TimeSpan();
             foreach (GeneralizedEvent e in todaysEvents)
@@ -59,6 +59,17 @@ namespace Reporting
             double anticipatedMinutes = workableHours.Value.TotalMinutes - obligatedTime.TotalMinutes;
             anticipatedMinutes *= targetProductivity;
 
+            // Note that I'm considering extra time to be "the amount of time I can reasonably do nothing"
+            // I'll still allocate 8% of the total time as overhead that I don't consider anywhere. This could be used
+            // as travel time, etc. 
+            var multiplier = 1 - targetProductivity - 0.08;
+            if (multiplier < 0)
+                multiplier = 0;
+
+            double slackOffMinutes = workableHours.Value.TotalMinutes - obligatedTime.TotalMinutes;
+            slackOffMinutes *= multiplier;
+            TimeSpan slackOffTime = new TimeSpan(0, (int)slackOffMinutes, 0);
+
             // Pomodoro Technique:
             // Work 25 minutes then take a 5 minute break. Every 4th break, take a 30 minute break instead
             // 1 cycle: (25 + 5) + (25 + 5) + (25 + 5) + (25 + 30) = 145 minutes
@@ -66,7 +77,7 @@ namespace Reporting
 
             int pomCount = (int)((anticipatedMinutes / 145) * 4);
 
-            createDocument(todaysEvents, dueToday, dueTomorrow, dueThisWeek, obligatedTime, pomCount);
+            createDocument(todaysEvents, dueToday, dueTomorrow, dueThisWeek, obligatedTime, pomCount, daysOffset, slackOffTime);
             Process p = new Process();
             //p.StartInfo = new ProcessStartInfo("Test.pdf");
             //p.Start();
@@ -74,8 +85,8 @@ namespace Reporting
         }
 
         //private void createDocument()
-        private void createDocument(List<GeneralizedEvent> events, List<GeneralizedTask> dueToday, List<GeneralizedTask> dueTomorrow,
-            List<GeneralizedTask> dueThisWeek, TimeSpan obligatedTime, int pomCount)
+        private string createDocument(List<GeneralizedEvent> events, List<GeneralizedTask> dueToday, List<GeneralizedTask> dueTomorrow,
+            List<GeneralizedTask> dueThisWeek, TimeSpan obligatedTime, int pomCount, int daysOffset = 0, TimeSpan? slackOffTime = null)
         {
 
             // Define fonts:
@@ -86,7 +97,7 @@ namespace Reporting
 
             //bool moreEvents = false, moreDueToday = false, moreDueTomorrow = false, moreDueLater = false;
             // Limit number of events and tasks to display
-            var d = DateTime.Now;
+            var d = DateTime.Now.AddDays(daysOffset);
             var title = $"{d.Year}-{d.Month}-{d.Day}";
             string path = ConfigurationManager.AppSettings.Get("ReportStorage");
             if (File.Exists(Path.Combine(path, $"{title}.pdf")))
@@ -99,12 +110,17 @@ namespace Reporting
                 title = $"{title} ({i})";
             }
 
-            FileStream fs = new FileStream(Path.Combine(path, $"{title}.pdf"), FileMode.Create, FileAccess.Write, FileShare.None);
+            string absolutePath = Path.Combine(path, $"{title}.pdf");
+            FileStream fs = new FileStream(absolutePath, FileMode.Create, FileAccess.Write, FileShare.None);
             Document doc = new Document(PageSize.LETTER, 72, 72, 36, 36);
             PdfWriter writer = PdfWriter.GetInstance(doc, fs);
             doc.Open();
             Header header = new Header("Authored By", "Trevor T");
-            doc.Add(new Paragraph($"Hello,\nToday is {DateTime.Now.ToLongDateString()}.", new Font(FontFamily.HELVETICA, 20, Font.BOLD, new BaseColor(0, 0, 0))));
+            doc.Add(header);
+            //doc.Add(new Paragraph($"Hello,\nToday is {DateTime.Now.ToLongDateString()}.", new Font(FontFamily.HELVETICA, 20, Font.BOLD, new BaseColor(0, 0, 0))));
+            Paragraph standupTitle = new Paragraph($"Standup for {d.ToLongDateString()}", new Font(FontFamily.HELVETICA, 20, Font.BOLD, new BaseColor(0, 0, 0)));
+            standupTitle.Alignment = Element.ALIGN_CENTER;
+            doc.Add(standupTitle);
 
             #region Obligations
             doc.Add(new Paragraph((float)40.0, "Today's obligations:\n", new Font(FontFamily.HELVETICA, 16, Font.BOLD, new BaseColor(0, 0, 0))));
@@ -123,7 +139,7 @@ namespace Reporting
                 {
                     l.Add(new Chunk($"{e.Name}", bold));
                 }
-                    
+
                 listEvents.Add(l);
             }
             listEvents.IndentationLeft = 35;
@@ -167,7 +183,7 @@ namespace Reporting
             foreach (GeneralizedTask t in dueThisWeek)
             {
                 string dayOfWeek = "";
-                switch(t.DueDate.Value.DayOfWeek)
+                switch (t.DueDate.Value.DayOfWeek)
                 {
                     case DayOfWeek.Monday: dayOfWeek = "Monday"; break;
                     case DayOfWeek.Tuesday: dayOfWeek = "Tuesday"; break;
@@ -187,27 +203,71 @@ namespace Reporting
             doc.Add(listTasksThisWeek);
             #endregion
 
-            Paragraph scheduled = new Paragraph((float)40.0);
-            scheduled.Add(new Chunk("Hours Scheduled: ", new Font(FontFamily.HELVETICA, 16, Font.BOLD, new BaseColor(0, 0, 0))));
-            scheduled.Add(new Chunk($"{obligatedTime.Hours} hours {obligatedTime.Minutes} minutes", new Font(FontFamily.HELVETICA, 16, Font.UNDERLINE, new BaseColor(0, 0, 0))));
+            //Paragraph scheduled = new Paragraph((float)40.0);
+            //scheduled.Add(new Chunk("Hours Scheduled: ", new Font(FontFamily.HELVETICA, 16, Font.BOLD, new BaseColor(0, 0, 0))));
+            //scheduled.Add(new Chunk($"{obligatedTime.Hours} hours {obligatedTime.Minutes} minutes", new Font(FontFamily.HELVETICA, 16, Font.UNDERLINE, new BaseColor(0, 0, 0))));
 
-            Paragraph poms = new Paragraph((float)20.0);
-            poms.Add(new Chunk("Pomodoros to Complete: ", new Font(FontFamily.HELVETICA, 16, Font.BOLD, new BaseColor(0, 0, 0))));
-            poms.Add(new Chunk($"{pomCount}", new Font(FontFamily.HELVETICA, 16, Font.UNDERLINE, new BaseColor(0, 0, 0))));
+            //Paragraph poms = new Paragraph((float)20.0);
+            //poms.Add(new Chunk("Pomodoros to Complete: ", new Font(FontFamily.HELVETICA, 16, Font.BOLD, new BaseColor(0, 0, 0))));
+            //poms.Add(new Chunk($"{pomCount}", new Font(FontFamily.HELVETICA, 16, Font.UNDERLINE, new BaseColor(0, 0, 0))));
 
-            doc.Add(scheduled);
-            doc.Add(poms);
-            //doc.Add(new Paragraph((float)40.0, $"Today you have {obligatedTime.Hours} hours {obligatedTime.Minutes} minutes obligated.", new Font(FontFamily.HELVETICA, 11, Font.BOLD, new BaseColor(0, 0, 0))));
-            //doc.Add(new Paragraph((float)40.0, $"Today you should try to complete .", new Font(FontFamily.HELVETICA, 11, Font.BOLD, new BaseColor(0, 0, 0))));
-            //doc.Add(new Paragraph((float)50.0, "Today's scheduled tasks:\n", new Font(FontFamily.HELVETICA, 16, Font.BOLD, new BaseColor(0, 0, 0))));
-            //List list = new List(List.UNORDERED, 10f);
-            //list.SetListSymbol("\u2022");
-            //list.Add(new ListItem("One"));
-            //list.Add(new ListItem("Two"));
-            //list.IndentationLeft = 40;
-            //doc.Add(list);
+            //doc.Add(scheduled);
+            //doc.Add(poms);
+
+
+            //if (slackOffTime.HasValue)
+            //{
+            //    Paragraph slack = new Paragraph((float)20.0);
+            //    slack.Add(new Chunk("Extra Time: ", new Font(FontFamily.HELVETICA, 16, Font.BOLD, new BaseColor(0, 0, 0))));
+            //    slack.Add(new Chunk($"{slackOffTime.Value.Hours} hours {slackOffTime.Value.Minutes} minutes", new Font(FontFamily.HELVETICA, 16, Font.UNDERLINE, new BaseColor(0, 0, 0))));
+            //    doc.Add(slack);
+            //}
+
+            #region Summary Table
+            PdfPTable table = new PdfPTable(2);
+            table.SpacingBefore = 40;
+            table.WidthPercentage = 100;
+            PdfPCell hoursTitle = new PdfPCell(new Phrase("Hours Scheduled: ", new Font(FontFamily.HELVETICA, 14, Font.BOLD, new BaseColor(0, 0, 0))));
+            hoursTitle.HorizontalAlignment = Element.ALIGN_LEFT;
+            hoursTitle.Border = Rectangle.TOP_BORDER;
+            table.AddCell(hoursTitle);
+            PdfPCell hours = new PdfPCell(new Phrase($"{obligatedTime.Hours} hours {obligatedTime.Minutes} minutes", new Font(FontFamily.HELVETICA, 14, Font.NORMAL, new BaseColor(0, 0, 0))));
+            hours.HorizontalAlignment = Element.ALIGN_RIGHT;
+            hours.Border = Rectangle.TOP_BORDER;
+            table.AddCell(hours);
+
+            PdfPCell pomsTitle = new PdfPCell(new Phrase("Pomodoros to Complete: ", new Font(FontFamily.HELVETICA, 14, Font.BOLD, new BaseColor(0, 0, 0))));
+            pomsTitle.HorizontalAlignment = Element.ALIGN_LEFT;
+            pomsTitle.Border = Rectangle.NO_BORDER;
+            table.AddCell(pomsTitle);
+            PdfPCell poms = new PdfPCell(new Phrase($"{pomCount}", new Font(FontFamily.HELVETICA, 14, Font.NORMAL, new BaseColor(0, 0, 0))));
+            poms.HorizontalAlignment = Element.ALIGN_RIGHT;
+            poms.Border = Rectangle.NO_BORDER;
+            table.AddCell(poms);
+
+            if(slackOffTime.HasValue)
+            {
+                PdfPCell slackTitle = new PdfPCell(new Phrase("Extra Time: ", new Font(FontFamily.HELVETICA, 14, Font.BOLD, new BaseColor(0, 0, 0))));
+                slackTitle.HorizontalAlignment = Element.ALIGN_LEFT;
+                slackTitle.Border = Rectangle.BOTTOM_BORDER;
+                table.AddCell(slackTitle);
+                PdfPCell slack = new PdfPCell(new Phrase($"{slackOffTime.Value.Hours} hours {slackOffTime.Value.Minutes} minutes", new Font(FontFamily.HELVETICA, 14, Font.NORMAL, new BaseColor(0, 0, 0))));
+                slack.HorizontalAlignment = Element.ALIGN_RIGHT;
+                slack.Border = Rectangle.BOTTOM_BORDER;
+                table.AddCell(slack);
+            }
+
+            doc.Add(table);
+            #endregion
+
+            Paragraph generated = new Paragraph((float)10.0, $"(Generated on {DateTime.Now.ToShortDateString()} at {DateTime.Now.ToShortTimeString()})", new Font(FontFamily.HELVETICA, 9, Font.ITALIC, new BaseColor(0, 0, 0)));
+            generated.Alignment = Element.ALIGN_RIGHT;
+            doc.Add(generated);
+            doc.AddHeader("Date Generated", $"{DateTime.Now.ToShortDateString()}");
 
             doc.Close();
+
+            return absolutePath;
         }
     }
 }

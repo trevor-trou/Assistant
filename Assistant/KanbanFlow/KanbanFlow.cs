@@ -110,17 +110,17 @@ namespace KanbanFlowClient
             return state;
         }
 
-        public List<GeneralizedTask> GetDueToday()
+        public List<GeneralizedTask> GetDueToday(int daysOffset = 0)
         {
-            DateTime todayLowerBound = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0);
-            DateTime todayUpperBound = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59);
+            DateTime todayLowerBound = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(daysOffset).Day, 0, 0, 0);
+            DateTime todayUpperBound = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(daysOffset).Day, 23, 59, 59);
 
             return GetTasksDue(todayLowerBound, todayUpperBound);
         }
 
-        public List<GeneralizedTask> GetDueTomorrow()
+        public List<GeneralizedTask> GetDueTomorrow(int daysOffset = 0)
         {
-            DateTime tomorrow = DateTime.Now.AddDays(1);
+            DateTime tomorrow = DateTime.Now.AddDays(1 + daysOffset);
 
             DateTime tomorrowLowerBound = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 0, 0, 0);
             DateTime tomorrowUpperBound = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 23, 59, 59);
@@ -128,10 +128,10 @@ namespace KanbanFlowClient
             return GetTasksDue(tomorrowLowerBound, tomorrowUpperBound);
         }
 
-        public List<GeneralizedTask> GetDueLaterThisWeek()
+        public List<GeneralizedTask> GetDueLaterThisWeek(int daysOffset = 0)
         {
-            DateTime dayAfterTomorrow = DateTime.Now.AddDays(2);
-            DateTime oneWeekFromToday = DateTime.Now.AddDays(7);
+            DateTime dayAfterTomorrow = DateTime.Now.AddDays(2 + daysOffset);
+            DateTime oneWeekFromToday = DateTime.Now.AddDays(7 + daysOffset);
             DateTime lower = new DateTime(dayAfterTomorrow.Year, dayAfterTomorrow.Month, dayAfterTomorrow.Day, 0, 0, 0);
             DateTime upper = new DateTime(oneWeekFromToday.Year, oneWeekFromToday.Month, oneWeekFromToday.Day, 23, 59, 59);
 
