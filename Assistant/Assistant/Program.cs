@@ -8,6 +8,7 @@ using KanbanFlowClient.Classes;
 using GoogleCalendar;
 using Newtonsoft.Json;
 using Reporting;
+using System.Diagnostics;
 
 namespace Assistant
 {
@@ -93,7 +94,7 @@ namespace Assistant
             return parseArguments(splitArgs);
         }
 
-        static void generateStandup(int offset = 0)
+        static void generateStandup(int offset = 0, bool showOnCompletion = true)
         {
             KanbanFlow kb = new KanbanFlow();
             kb.SignIn();
@@ -104,7 +105,14 @@ namespace Assistant
             cs.SignIn();
 
             StandupReport report = new StandupReport(cs, kb);
-            report.GenerateReport(offset);
+            string path = report.GenerateReport(offset);
+
+            if(showOnCompletion && path != "")
+            {
+                Process p = new Process();
+                p.StartInfo = new ProcessStartInfo(path);
+                p.Start();
+            }
         }
     }
 }

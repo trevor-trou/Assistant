@@ -31,7 +31,7 @@ namespace Reporting
             get { return exceptionString; }
         }
 
-        public bool GenerateReport(int daysOffset = 0, TimeSpan? workableHours = null, double targetProductivity = 0.75)
+        public string GenerateReport(int daysOffset = 0, TimeSpan? workableHours = null, double targetProductivity = 0.75)
         {
             if (!workableHours.HasValue)
             {
@@ -41,7 +41,7 @@ namespace Reporting
             if (!(GoogleClient.SignedIn && KanbanClient.SignedIn))
             {
                 exceptionString = "Missing authorization from either Google Client of Kanban Client";
-                return false;
+                return "";
             }
             List<GeneralizedEvent> todaysEvents = GoogleClient.GetTodaysEvents(daysOffset);
             List<GeneralizedTask> dueToday = KanbanClient.GetDueToday(daysOffset);
@@ -77,11 +77,11 @@ namespace Reporting
 
             int pomCount = (int)((anticipatedMinutes / 145) * 4);
 
-            createDocument(todaysEvents, dueToday, dueTomorrow, dueThisWeek, obligatedTime, pomCount, daysOffset, slackOffTime);
-            Process p = new Process();
+            string path = createDocument(todaysEvents, dueToday, dueTomorrow, dueThisWeek, obligatedTime, pomCount, daysOffset, slackOffTime);
+            //Process p = new Process();
             //p.StartInfo = new ProcessStartInfo("Test.pdf");
             //p.Start();
-            return true;
+            return path;
         }
 
         //private void createDocument()
