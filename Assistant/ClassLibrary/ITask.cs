@@ -10,5 +10,6 @@ namespace ClassLibrary
         string Description { get; set; }
         TimeSpan TimeEstimate { get; set; }
         DateTime? DueDate { get; set; }
+        bool Completed { get; set; }
     }
 }

@@ -153,6 +153,9 @@ namespace Reporting
             foreach (GeneralizedTask t in dueToday)
             {
                 var l = new ListItem();
+                if(t.Completed)
+                    l.Add(new Chunk($"(Done) ", italic));
+
                 l.Add(new Chunk($"{t.Name}    ", bold));
                 l.Add(new Chunk($"(Due at {t.DueDate.Value.ToShortTimeString()})", italic));
                 listTasksToday.Add(l);
@@ -168,6 +171,9 @@ namespace Reporting
             foreach (GeneralizedTask t in dueTomorrow)
             {
                 var l = new ListItem();
+                if (t.Completed)
+                    l.Add(new Chunk($"(Done) ", italic));
+
                 l.Add(new Chunk($"{t.Name}    ", bold));
                 l.Add(new Chunk($"(Due at {t.DueDate.Value.ToShortTimeString()})", italic));
                 listTasksTomorrow.Add(l);
@@ -195,6 +201,9 @@ namespace Reporting
                 }
 
                 var l = new ListItem();
+                if (t.Completed)
+                    l.Add(new Chunk($"(Done) ", italic));
+
                 l.Add(new Chunk($"{t.Name}    ", bold));
                 l.Add(new Chunk($"(Due on {dayOfWeek})", italic));
                 listTasksThisWeek.Add(l);

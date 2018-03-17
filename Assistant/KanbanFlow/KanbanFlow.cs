@@ -137,7 +137,7 @@ namespace KanbanFlowClient
 
             return GetTasksDue(dayAfterTomorrow, oneWeekFromToday);
         }
-        private List<GeneralizedTask> GetTasksDue(DateTime lowerBound, DateTime upperBound, bool excludeDone = true)
+        private List<GeneralizedTask> GetTasksDue(DateTime lowerBound, DateTime upperBound, bool excludeDone = false)
         {
             List<GeneralizedTask> due = new List<GeneralizedTask>();
 
@@ -150,10 +150,10 @@ namespace KanbanFlowClient
             {
                 string doneColumnId = boardContents.Where(x => x.columnName.ToLower().Equals("done")).FirstOrDefault()?.columnId;
                 // Time complexity for this is poor, however Kanban boards are unlikely to have a large enough data set. Especially since we
-                // won't be considering the tasks in the done column.
+                // won't be considering all tasks in the done column. Done column limited to 20 tasks returned by API (see KanbanFlow API documentation).
                 foreach (Column col in boardContents)
                 {
-                    if (col.columnId != doneColumnId || !excludeDone)
+                    if (!excludeDone)
                     {
                         foreach (Task task in col.tasks)
                         {
@@ -164,7 +164,8 @@ namespace KanbanFlowClient
                                     Name = task.name,
                                     Description = task.description,
                                     TimeEstimate = (new TimeSpan(0, 0, task.totalSecondsEstimate)),
-                                    DueDate = task.dueDate.Value
+                                    DueDate = task.dueDate.Value,
+                                    Completed = task.columnId == doneColumnId
                                 });
                             }
                         }
@@ -226,13 +227,13 @@ namespace KanbanFlowClient
             }
             return state;
         }
-        public bool populateDueDates()
+        public bool populateDueDates(bool excludeDoneColumn = false)
         {
             bool state = true;
             string doneColumnId = boardContents.Where(x => x.columnName.ToLower().Equals("done")).FirstOrDefault()?.columnId;
             for (int i = 0; i < boardContents.Length; i++)
             {
-                if (boardContents[i].columnId != doneColumnId)
+                if (!excludeDoneColumn || boardContents[i].columnId != doneColumnId)
                 {
                     for (int j = 0; j < boardContents[i].tasks.Length; j++)
                     {
