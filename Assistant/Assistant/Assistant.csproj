@@ -42,8 +42,8 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -88,6 +88,10 @@
     <ProjectReference Include="..\Reporting\Reporting.csproj">
       <Project>{7cf4a266-8d80-423f-8179-3b365eeae2c1}</Project>
       <Name>Reporting</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WeatherUnderground\WeatherUnderground.csproj">
+      <Project>{bdeb9e1d-c9a4-4a74-b94b-af66fef31608}</Project>
+      <Name>WeatherUnderground</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

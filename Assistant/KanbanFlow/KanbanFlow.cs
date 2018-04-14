@@ -135,7 +135,7 @@ namespace KanbanFlowClient
             DateTime lower = new DateTime(dayAfterTomorrow.Year, dayAfterTomorrow.Month, dayAfterTomorrow.Day, 0, 0, 0);
             DateTime upper = new DateTime(oneWeekFromToday.Year, oneWeekFromToday.Month, oneWeekFromToday.Day, 23, 59, 59);
 
-            return GetTasksDue(dayAfterTomorrow, oneWeekFromToday);
+            return GetTasksDue(lower, upper);
         }
         private List<GeneralizedTask> GetTasksDue(DateTime lowerBound, DateTime upperBound, bool excludeDone = false)
         {

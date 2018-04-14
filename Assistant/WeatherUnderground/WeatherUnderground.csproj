@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7CF4A266-8D80-423F-8179-3B365EEAE2C1}</ProjectGuid>
+    <ProjectGuid>{BDEB9E1D-C9A4-4A74-B94B-AF66FEF31608}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Reporting</RootNamespace>
-    <AssemblyName>Reporting</AssemblyName>
+    <RootNamespace>WeatherUnderground</RootNamespace>
+    <AssemblyName>WeatherUnderground</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -29,21 +29,11 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Test\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="itextsharp, Version=5.5.13.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
-      <HintPath>..\packages\iTextSharp.5.5.13\lib\itextsharp.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -53,27 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="StandupReport.cs" />
+    <Compile Include="Forecast.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="WeatherClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GoogleCalendar\GoogleCalendar.csproj">
-      <Project>{b1a7aef7-9a10-482a-8f55-b818c643da9a}</Project>
-      <Name>GoogleCalendar</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\KanbanFlow\KanbanFlow.csproj">
-      <Project>{75d6215c-6e73-4a22-b176-7810e0c3aed6}</Project>
-      <Name>KanbanFlow</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WeatherUnderground\WeatherUnderground.csproj">
-      <Project>{bdeb9e1d-c9a4-4a74-b94b-af66fef31608}</Project>
-      <Name>WeatherUnderground</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="..\ClassLibrary\ClassLibrary.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

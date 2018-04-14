@@ -9,6 +9,7 @@ using GoogleCalendar;
 using Newtonsoft.Json;
 using Reporting;
 using System.Diagnostics;
+using WeatherUnderground;
 
 namespace Assistant
 {
@@ -18,13 +19,13 @@ namespace Assistant
         {
             bool continueRunning = true;
 
-            if(args.Length != 0)
+            if (args.Length != 0)
             {
                 var suppliedArgs = parseArguments(args);
-                if(suppliedArgs.Contains("standup"))
+                if (suppliedArgs.Contains("standup"))
                 {
                     continueRunning = false;
-                    if(suppliedArgs.Contains("tomorrow"))
+                    if (suppliedArgs.Contains("tomorrow"))
                     {
                         // run tomorrow
                         generateStandup(1);
@@ -47,7 +48,7 @@ namespace Assistant
                 string input = Console.ReadLine();
 
                 List<string> inputArgs = parseArguments(input);
-                if(inputArgs.Contains("exit"))
+                if (inputArgs.Contains("exit"))
                 {
                     continueRunning = false;
                 }
@@ -104,7 +105,10 @@ namespace Assistant
             CalendarServices cs = new CalendarServices();
             cs.SignIn();
 
-            StandupReport report = new StandupReport(cs, kb);
+            WeatherClient wc = new WeatherClient();
+            wc.SetToken();
+
+            StandupReport report = new StandupReport(cs, kb, wc);
             string path = report.GenerateReport(offset);
 
             if(showOnCompletion && path != "")

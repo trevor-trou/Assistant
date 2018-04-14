@@ -12,6 +12,7 @@ using static iTextSharp.text.Font;
 using System.Diagnostics;
 using ClassLibrary;
 using System.Configuration;
+using WeatherUnderground;
 
 namespace Reporting
 {
@@ -19,10 +20,12 @@ namespace Reporting
     {
         private CalendarServices GoogleClient;
         private KanbanFlow KanbanClient;
-        public StandupReport(CalendarServices googleClient, KanbanFlow kanbanClient)
+        private WeatherClient WeatherReporter;
+        public StandupReport(CalendarServices googleClient, KanbanFlow kanbanClient, WeatherClient weatherClient)
         {
             GoogleClient = googleClient;
             KanbanClient = kanbanClient;
+            WeatherReporter = weatherClient;
         }
         private string exceptionString;
 
@@ -47,6 +50,8 @@ namespace Reporting
             List<GeneralizedTask> dueToday = KanbanClient.GetDueToday(daysOffset);
             List<GeneralizedTask> dueTomorrow = KanbanClient.GetDueTomorrow(daysOffset);
             List<GeneralizedTask> dueThisWeek = KanbanClient.GetDueLaterThisWeek(daysOffset);
+
+            Forecast weatherReport = WeatherReporter.GetDailyWeatherReport("", "", daysOffset);
 
             TimeSpan obligatedTime = new TimeSpan();
             foreach (GeneralizedEvent e in todaysEvents)
@@ -77,7 +82,7 @@ namespace Reporting
 
             int pomCount = (int)((anticipatedMinutes / 145) * 4);
 
-            string path = createDocument(todaysEvents, dueToday, dueTomorrow, dueThisWeek, obligatedTime, pomCount, daysOffset, slackOffTime);
+            string path = createDocument(todaysEvents, dueToday, dueTomorrow, dueThisWeek, obligatedTime, weatherReport, pomCount, daysOffset, slackOffTime);
             //Process p = new Process();
             //p.StartInfo = new ProcessStartInfo("Test.pdf");
             //p.Start();
@@ -86,7 +91,7 @@ namespace Reporting
 
         //private void createDocument()
         private string createDocument(List<GeneralizedEvent> events, List<GeneralizedTask> dueToday, List<GeneralizedTask> dueTomorrow,
-            List<GeneralizedTask> dueThisWeek, TimeSpan obligatedTime, int pomCount, int daysOffset = 0, TimeSpan? slackOffTime = null)
+            List<GeneralizedTask> dueThisWeek, TimeSpan obligatedTime, Forecast weather, int pomCount, int daysOffset = 0, TimeSpan? slackOffTime = null)
         {
 
             // Define fonts:
@@ -265,6 +270,17 @@ namespace Reporting
                 slack.Border = Rectangle.BOTTOM_BORDER;
                 table.AddCell(slack);
             }
+
+            Image img = Image.GetInstance(weather.icon_url);
+            PdfPCell leftWeatherCell = new PdfPCell(img,false);
+            leftWeatherCell.HorizontalAlignment = Element.ALIGN_LEFT;
+            leftWeatherCell.VerticalAlignment = Element.ALIGN_MIDDLE;
+            leftWeatherCell.Border = Rectangle.BOTTOM_BORDER;
+            table.AddCell(leftWeatherCell);
+            PdfPCell rightWeatherCell = new PdfPCell(new Phrase(weather.fcttext, new Font(FontFamily.HELVETICA, 14, Font.NORMAL, new BaseColor(0, 0, 0))));
+            rightWeatherCell.HorizontalAlignment = Element.ALIGN_JUSTIFIED;
+            rightWeatherCell.Border = Rectangle.BOTTOM_BORDER;
+            table.AddCell(rightWeatherCell);
 
             doc.Add(table);
             #endregion
